@@ -89,16 +89,22 @@ class _CalculadoraState extends State<Calculadora> {
           expresion += ".";
         }
       }
-
       else if(texto == 'C'){
-        expresion = '';
-        
-      
+        expresion = '';      
       }
       else if (texto == '=') {
-        List<String> tokens = expresion.split(' ').where((e) => e.isNotEmpty).toList();
+        String normalizada = expresion
+            .replaceAll('(', ' ( ')
+            .replaceAll(')', ' ) ')
+            .replaceAll('+', ' + ')
+            .replaceAll('-', ' - ')
+            .replaceAll('×', ' × ')
+            .replaceAll('÷', ' ÷ ');
+
+        List<String> tokens = normalizada.split(' ').where((e) => e.isNotEmpty).toList();
 
         CalcError? error = validarExpresion(tokens);
+
         if (error != null) {
           expresion = error.mensaje();
           return;
@@ -106,7 +112,6 @@ class _CalculadoraState extends State<Calculadora> {
 
         try {
           double res = evaluar(tokens);
-
           if (res.isInfinite) {
             expresion = "MathError";
           } else if (res.isNaN) {
@@ -115,12 +120,9 @@ class _CalculadoraState extends State<Calculadora> {
             expresion = res.toString();
           }
         } catch (e) {
-          // errores matemáticos, como división entre cero
           expresion = MathError().mensaje();
         }
       }
-
-
     });
   }
 
@@ -154,13 +156,14 @@ class _CalculadoraState extends State<Calculadora> {
           return SyntaxError();
         }
 
-       if ("+-×÷".contains(a) && "+-×÷(".contains(b)) return SyntaxError();
+       if ("+-×÷".contains(a) && "+-×÷".contains(b)) return SyntaxError();
+
       }
     }
 
     if (balance != 0) return SyntaxError();
+    return null;
 
-    return null; // no hay error
   }
 
   double evaluar(List<String> tokens) {
@@ -193,7 +196,6 @@ class _CalculadoraState extends State<Calculadora> {
 
     return double.parse(tokens.first);
   }
-
 
   //funcion para evaluar parentesis
   double evaluarSinParentesis(List<String> tokens){
@@ -256,8 +258,6 @@ class _CalculadoraState extends State<Calculadora> {
     
   }
  
-  //errores de tipo matematico como division entre 0 o porcentaje de un operador
-
   //funcion por simplicidad
   Widget boton(String texto) {
     Color colorBoton;
@@ -357,14 +357,14 @@ class _CalculadoraState extends State<Calculadora> {
   }
 }
 
-//tipo de errores matematicos como division entre 0 o porcentaje de un operador
+//Manejo de posibles errores matematicos y de sintaxis
 abstract class CalcError {
 String mensaje();
 }
 
 class SyntaxError extends CalcError {
   @override
-  String mensaje() => "Error de sintaxis";
+  String mensaje() => "SyntaxError";
 }
 
 class MathError extends CalcError {
