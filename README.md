@@ -1,4 +1,4 @@
-# practica01
+# flutter-basic-calculator
 
 A new Flutter project.
 
